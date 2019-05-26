@@ -7,23 +7,28 @@ def gen_np_embedding(fn, word_idx_fn, out_fn, dim=300):
     with open(word_idx_fn) as f:
         word_idx=json.load(f)
     embedding=np.zeros((len(word_idx)+2, dim) )
-    with open(fn) as f:
+    with open(fn, encoding='utf-8') as f:
         for l in f:
             rec=l.rstrip().split(' ')
             if len(rec)==2: #skip the first line.
                 continue 
             if rec[0] in word_idx:
                 embedding[word_idx[rec[0]]]=np.array([float(r) for r in rec[1:] ])
-    with open(out_fn+".oov.txt", "w") as fw:
+    with open(out_fn+".oov.txt", "w", encoding='utf-8') as fw:
         for w in word_idx:
             if embedding[word_idx[w] ].sum()==0.:
                 fw.write(w+"\n")
     np.save(out_fn+".npy", embedding.astype('float32') )
-    
+
+
+# embed_data_dir = "data/embedding/"
+# gen_emb_file = 'gen.vec'
+embed_data_dir = 'd:/data/res/wordvecs/'
+gen_emb_file = 'glove.840B.300d.txt'
 parser = argparse.ArgumentParser()
-parser.add_argument('--emb_dir', type=str, default="data/embedding/")
+parser.add_argument('--emb_dir', type=str, default=embed_data_dir)
 parser.add_argument('--out_dir', type=str, default="data/prep_data/")
-parser.add_argument('--gen_emb', type=str, default="gen.vec")
+parser.add_argument('--gen_emb', type=str, default=gen_emb_file)
 parser.add_argument('--laptop_emb', type=str, default="laptop_emb.vec")
 parser.add_argument('--restaurant_emb', type=str, default="restaurant_emb.vec")
 parser.add_argument('--word_idx', type=str, default="word_idx.json")
