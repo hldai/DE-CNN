@@ -369,7 +369,7 @@ if __name__ == "__main__":
         model_dir = '/home/hldai/data/aspect/models/'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--runs', type=int, default=1)
+    parser.add_argument('--runs', type=int, default=3)
     parser.add_argument('--data_dir', type=str, default="data/prep_data/")
     parser.add_argument('--model_dir', type=str, default=model_dir)
     parser.add_argument('--domain', type=str, default="laptop")

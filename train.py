@@ -155,7 +155,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    data_file = 'data/prep_data/laptops14-dhl.npz'
+    if args.domain == 'laptop':
+        data_file = 'data/prep_data/laptops14-dhl.npz'
+    else:
+        data_file = 'data/prep_data/restaurants14-dhl.npz'
     run(args.domain, data_file, args.data_dir, args.model_dir, args.valid, args.runs, args.epochs, args.lr,
         args.dropout, args.batch_size)
 
