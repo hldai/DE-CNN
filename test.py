@@ -380,7 +380,7 @@ if __name__ == "__main__":
         command="java -cp script/eval.jar Main.Aspects data/official_data/pred.xml data/official_data/Laptops_Test_Gold.xml"
         template="data/official_data/Laptops_Test_Data_PhaseA.xml"
 
-    evaluate(args.runs, args.data_dir, args.model_dir, args.domain, command, template)
+    # evaluate(args.runs, args.data_dir, args.model_dir, args.domain, command, template)
 
     # data_file = 'data/prep_data/laptops14-dhl-test.npz'
     data_file = 'data/prep_data/laptop.npz'
@@ -388,4 +388,4 @@ if __name__ == "__main__":
     pred_file = 'data/official_data/pred-dhl.xml'
     gold_file = 'data/official_data/Laptops_Test_Gold.xml'
     # evaluate_dhl(args.runs, data_file, text_file, args.model_dir, args.domain, template, gold_file, pred_file)
-    # __calc_f1(gold_file, pred_file)
+    __calc_f1(gold_file, pred_file)
