@@ -401,10 +401,12 @@ if __name__ == "__main__":
         pred_file = 'data/official_data/pred-dhl-rest.xml'
         gold_file = 'data/official_data/Restaurants_Test_Gold.xml'
         template = "data/official_data/Restaurants_Test_Data_PhaseA.xml"
+        domain = 'restaurant'
     else:
         data_file = 'data/prep_data/restaurants15-dhl.npz'
         text_file = 'data/prep_data/restaurants15-dhl-test-raw.json'
         pred_file = 'data/official_data/pred-dhl-rest.xml'
-        gold_file = 'data/official_data/Restaurants_Test_Gold.xml'
-        template = "data/official_data/Restaurants_Test_Data_PhaseA.xml"
+        gold_file = 'data/official_data/ABSA15_Restaurants_Test_conv_gold.xml'
+        template = "data/official_data/ABSA15_Restaurants_Test_conv.xml"
+        domain = 'restaurant'
     evaluate_dhl(args.runs, data_file, text_file, args.model_dir, args.domain, template, gold_file, pred_file)
