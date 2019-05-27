@@ -156,6 +156,8 @@ def label_laptop_xml(fn, output_fn, corpus, label):
                 tag_on=False 
                 opin=ET.Element("aspectTerm")
                 opin.attrib['term']=sent.find('text').text[start:end]
+                if not sent.find('text').text[start:end].endswith(tokens[token_idx - 1]):
+                    print(sent.find('text').text[start:end], tokens[token_idx - 1])
                 opin.attrib['from']=str(start)
                 opin.attrib['to']=str(end)
                 opins.append(opin)
@@ -371,7 +373,7 @@ if __name__ == "__main__":
         model_dir = '/home/hldai/data/aspect/models/'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--runs', type=int, default=3)
+    parser.add_argument('--runs', type=int, default=1)
     parser.add_argument('--data_dir', type=str, default="data/prep_data/")
     parser.add_argument('--model_dir', type=str, default=model_dir)
     parser.add_argument('--domain', type=str, default="laptop")
@@ -393,9 +395,15 @@ if __name__ == "__main__":
         text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
         pred_file = 'data/official_data/pred-dhl-lap.xml'
         gold_file = 'data/official_data/Laptops_Test_Gold.xml'
-    else:
+    elif args.domain == 're14':
         data_file = 'data/prep_data/restaurants14-dhl.npz'
         text_file = 'data/prep_data/restaurants14-dhl-test-raw.json'
+        pred_file = 'data/official_data/pred-dhl-rest.xml'
+        gold_file = 'data/official_data/Restaurants_Test_Gold.xml'
+        template = "data/official_data/Restaurants_Test_Data_PhaseA.xml"
+    else:
+        data_file = 'data/prep_data/restaurants15-dhl.npz'
+        text_file = 'data/prep_data/restaurants15-dhl-test-raw.json'
         pred_file = 'data/official_data/pred-dhl-rest.xml'
         gold_file = 'data/official_data/Restaurants_Test_Gold.xml'
         template = "data/official_data/Restaurants_Test_Data_PhaseA.xml"
