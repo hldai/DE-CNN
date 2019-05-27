@@ -112,7 +112,8 @@ def train(train_X, train_y, valid_X, valid_y, model, model_fn, optimizer, parame
     return train_history, valid_history
 
 def run(domain, data_dir, model_dir, valid_split, runs, epochs, lr, dropout, batch_size=128):
-    gen_emb=np.load(data_dir+"gen.vec.npy")
+#    gen_emb=np.load(data_dir+"gen.vec.npy")
+    gen_emb=np.load(data_dir+"glove.840B.300d.txt.npy")
     domain_emb=np.load(data_dir+domain+"_emb.vec.npy")
     ae_data=np.load(data_dir+domain+".npz")
     
