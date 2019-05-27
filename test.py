@@ -293,15 +293,13 @@ def test_dhl(model, test_X, raw_X, domain, template, gold_file, pred_file, batch
         label_rest_xml(template, pred_file, raw_X, pred_y)
     elif domain=='laptop':
         label_laptop_xml(template, pred_file, raw_X, pred_y)
+    return 0
 
 
-def evaluate_dhl(runs, data_dir, model_dir, domain, template, gold_file, pred_file):
-    ae_data=np.load(data_dir+domain+".npz")
-    print(ae_data['test_X'].shape)
-    print(ae_data['test_y'])
+def evaluate_dhl(runs, data_file, text_file, model_dir, domain, template, gold_file, pred_file):
+    ae_data=np.load(data_file)
 
-    exit()
-    with open(data_dir+domain+"_raw_test.json") as f:
+    with open(text_file) as f:
         raw_X=json.load(f)
     results=[]
     for r in range(runs):
@@ -384,7 +382,9 @@ if __name__ == "__main__":
 
     # evaluate(args.runs, args.data_dir, args.model_dir, args.domain, command, template)
 
+    data_file = 'data/prep_data/laptops14-dhl-test.npz'
+    text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
     pred_file = 'data/official_data/pred.xml'
     gold_file = 'data/official_data/Laptops_Test_Gold.xml'
-    evaluate_dhl(args.runs, args.data_dir, args.model_dir, args.domain, template, gold_file, pred_file)
+    evaluate_dhl(args.runs, data_file, text_file, args.model_dir, args.domain, template, gold_file, pred_file)
     # __calc_f1(gold_file, pred_file)
