@@ -263,6 +263,7 @@ def __calc_f1(true_file, pred_file):
         hit_cnt += __count_hit(terms_true, terms_pred)
     p, r, f1 = prf1(true_cnt, sys_cnt, hit_cnt)
     print(p, r, f1)
+    return f1
 
 
 def test_dhl(model, test_X, raw_X, domain, template, gold_file, pred_file, batch_size=128, crf=False):
@@ -305,8 +306,10 @@ def evaluate_dhl(runs, data_file, text_file, model_dir, domain, template, gold_f
     for r in range(runs):
         model=torch.load(model_dir+domain+str(r))
         result=test_dhl(model, ae_data['test_X'], raw_X, domain, template, gold_file, pred_file, crf=False)
-        results.append(result)
-    print(sum(results)/len(results) )
+        # results.append(result)
+        cur_f1 = __calc_f1(gold_file, pred_file)
+        results.append(cur_f1)
+    print(sum(results)/len(results))
     
 
 def test(model, test_X, raw_X, domain, command, template, batch_size=128, crf=False):
@@ -388,4 +391,3 @@ if __name__ == "__main__":
     pred_file = 'data/official_data/pred-dhl.xml'
     gold_file = 'data/official_data/Laptops_Test_Gold.xml'
     evaluate_dhl(args.runs, data_file, text_file, args.model_dir, args.domain, template, gold_file, pred_file)
-    # __calc_f1(gold_file, pred_file)
