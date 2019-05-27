@@ -320,8 +320,8 @@ def evaluate_dhl(runs, data_file, text_file, model_dir, domain, template, gold_f
         raw_X = json.load(f)
     results = []
     for r in range(runs):
-        # model = torch.load(model_dir + domain + str(r))
-        # result = test_dhl(model, ae_data['test_X'], raw_X, domain, template, gold_file, pred_file, crf=False)
+        model = torch.load(model_dir + domain + str(r))
+        result = test_dhl(model, ae_data['test_X'], raw_X, domain, template, gold_file, pred_file, crf=False)
         cur_f1 = __calc_f1(gold_file, pred_file)
         results.append(cur_f1)
     print(sum(results)/len(results))
@@ -384,7 +384,7 @@ if __name__ == "__main__":
         model_dir = '/home/hldai/data/aspect/models/'
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--runs', type=int, default=1)
+    parser.add_argument('--runs', type=int, default=2)
     parser.add_argument('--data_dir', type=str, default="data/prep_data/")
     parser.add_argument('--model_dir', type=str, default=model_dir)
     parser.add_argument('--domain', type=str, default="laptop")
