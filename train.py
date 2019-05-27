@@ -103,10 +103,12 @@ def train(train_X, train_y, valid_X, valid_y, model, model_fn, optimizer, parame
         loss=valid_loss(model, train_X, train_y, crf=crf)
         train_history.append(loss)
         loss=valid_loss(model, valid_X, valid_y, crf=crf)
+        print('l_v={:.4f}'.format(loss))
         valid_history.append(loss)        
         if loss<best_loss:
             best_loss=loss
             torch.save(model, model_fn)
+            print('model saved to {}'.format(model_fn))
         shuffle_idx=np.random.permutation(len(train_X) )
         train_X=train_X[shuffle_idx]
         train_y=train_y[shuffle_idx]

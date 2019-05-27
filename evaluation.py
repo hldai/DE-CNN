@@ -217,9 +217,10 @@ def test(model, test_X, raw_X, domain, command, template, batch_size=128, crf=Fa
         return float(acc[9][10:])
     elif domain=='laptop':
         label_laptop_xml(template, command[4], raw_X, pred_y)
-        acc=check_output(command ).split()
-        print(acc)
-        return float(acc[15])
+        # acc=check_output(command ).split()
+        # print(acc)
+        # return float(acc[15])
+        return 0.0
 
 def evaluate(runs, data_dir, model_dir, domain, command, template):
     ae_data=np.load(data_dir+domain+".npz")
@@ -234,7 +235,7 @@ def evaluate(runs, data_dir, model_dir, domain, command, template):
 
 if __name__ == "__main__":    
     parser = argparse.ArgumentParser()
-    parser.add_argument('--runs', type=int, default=5)
+    parser.add_argument('--runs', type=int, default=1)
     parser.add_argument('--data_dir', type=str, default="data/prep_data/")
     parser.add_argument('--model_dir', type=str, default="model/")
     parser.add_argument('--domain', type=str, default="laptop")
