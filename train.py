@@ -125,6 +125,8 @@ def run(domain, data_dir, model_dir, valid_split, runs, epochs, lr, dropout, bat
     valid_y=ae_data['train_y'][-valid_split:]
     train_X=ae_data['train_X'][:-valid_split]
     train_y=ae_data['train_y'][:-valid_split]
+    print(train_X.shape)
+    exit()
 
     for r in range(runs):
         print(r)
