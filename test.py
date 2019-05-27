@@ -290,10 +290,12 @@ def test_dhl(model, test_X, raw_X, domain, template, gold_file, pred_file, batch
     model.train()
     assert len(pred_y)==len(test_X)
 
-    if domain=='restaurant':
-        label_rest_xml(template, pred_file, raw_X, pred_y)
-    elif domain=='laptop':
-        label_laptop_xml(template, pred_file, raw_X, pred_y)
+    # if domain=='restaurant':
+    #     label_rest_xml(template, pred_file, raw_X, pred_y)
+    # elif domain=='laptop':
+    #     label_laptop_xml(template, pred_file, raw_X, pred_y)
+
+    label_laptop_xml(template, pred_file, raw_X, pred_y)
     return 0
 
 
@@ -396,4 +398,5 @@ if __name__ == "__main__":
         text_file = 'data/prep_data/restaurants14-dhl-test-raw.json'
         pred_file = 'data/official_data/pred-dhl-rest.xml'
         gold_file = 'data/official_data/Restaurants_Test_Gold.xml'
+        template = "data/official_data/Restaurants_Test_Data_PhaseA.xml"
     evaluate_dhl(args.runs, data_file, text_file, args.model_dir, args.domain, template, gold_file, pred_file)
