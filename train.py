@@ -119,6 +119,7 @@ def run(domain, data_file, data_dir, model_dir, valid_split, runs, epochs, lr, d
 #    gen_emb=np.load(data_dir+"gen.vec.npy")
     gen_emb=np.load(data_dir+"glove.840B.300d.txt.npy")
     domain_emb=np.load(data_dir+domain+"_emb.vec.npy")
+    print(data_file)
     ae_data=np.load(data_file)
     
     valid_X=ae_data['train_X'][-valid_split:]
@@ -155,12 +156,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    domain = 'laptop'
     if args.domain == 'laptop':
         data_file = 'data/prep_data/laptops14-dhl.npz'
     elif args.domain == 're14':
         data_file = 'data/prep_data/restaurants14-dhl.npz'
+        domain = 'restaurant'
     else:
         data_file = 'data/prep_data/restaurants15-dhl.npz'
-    run(args.domain, data_file, args.data_dir, args.model_dir, args.valid, args.runs, args.epochs, args.lr,
+        domain = 'restaurant'
+    run(domain, data_file, args.data_dir, args.model_dir, args.valid, args.runs, args.epochs, args.lr,
         args.dropout, args.batch_size)
 
