@@ -395,6 +395,8 @@ if __name__ == "__main__":
         text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
         pred_file = 'data/official_data/pred-dhl-lap.xml'
         gold_file = 'data/official_data/Laptops_Test_Gold.xml'
+        template = "data/official_data/Laptops_Test_Data_PhaseA.xml"
+        domain = 'laptop'
     elif args.domain == 're14':
         data_file = 'data/prep_data/restaurants14-dhl.npz'
         text_file = 'data/prep_data/restaurants14-dhl-test-raw.json'
@@ -409,4 +411,4 @@ if __name__ == "__main__":
         gold_file = 'data/official_data/ABSA15_Restaurants_Test_conv_gold.xml'
         template = "data/official_data/ABSA15_Restaurants_Test_conv.xml"
         domain = 'restaurant'
-    evaluate_dhl(args.runs, data_file, text_file, args.model_dir, args.domain, template, gold_file, pred_file)
+    evaluate_dhl(args.runs, data_file, text_file, args.model_dir, domain, template, gold_file, pred_file)
