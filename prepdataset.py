@@ -109,7 +109,7 @@ def __gen_word_idx_file(tok_text_files, output_file):
                 words = line.strip().split(' ')
                 for w in words:
                     vocab.add(w)
-    word_idx_dict = {w: i for i, w in enumerate(vocab)}
+    word_idx_dict = {w: i + 2 for i, w in enumerate(vocab)}
     with open(output_file, 'w', encoding='utf-8') as fout:
         fout.write('{}\n'.format(json.dumps(word_idx_dict)))
 
@@ -132,19 +132,23 @@ token_id_file = 'data/prep_data/word_idx_dhl.json'
 # __prep_dataset(train_sents_file, train_tok_text_file, test_sents_file, test_tok_text_file,
 #                token_id_file, output_file, output_tokens_file)
 
-# train_sents_file = 'd:/data/aspect/semeval14/restaurants/restaurants_train_sents.json'
-# train_tok_text_file = 'd:/data/aspect/semeval14/restaurants/restaurants_train_texts_tokfc.txt'
-# test_sents_file = 'd:/data/aspect/semeval14/restaurants/restaurants_test_sents.json'
-# test_tok_text_file = 'd:/data/aspect/semeval14/restaurants/restaurants_test_texts_tokfc.txt'
-# output_file = 'data/prep_data/restaurants14-dhl.npz'
-# output_tokens_file = 'data/prep_data/restaurants14-dhl-test-raw.json'
+train_sents_file = 'd:/data/aspect/semeval14/restaurants/restaurants_train_sents.json'
+train_tok_text_file = 'd:/data/aspect/semeval14/restaurants/restaurants_train_texts_tokfc.txt'
+test_sents_file = 'd:/data/aspect/semeval14/restaurants/restaurants_test_sents.json'
+test_tok_text_file = 'd:/data/aspect/semeval14/restaurants/restaurants_test_texts_tokfc.txt'
+output_file = 'data/prep_data/restaurants14-dhl.npz'
+output_tokens_file = 'data/prep_data/restaurants14-dhl-test-raw.json'
+__prep_dataset(train_sents_file, train_tok_text_file, test_sents_file, test_tok_text_file,
+               token_id_file, output_file, output_tokens_file)
 
-# train_sents_file = 'd:/data/aspect/semeval15/restaurants/restaurants_train_sents.json'
-# train_tok_text_file = 'd:/data/aspect/semeval15/restaurants/restaurants_train_texts_tokfc.txt'
-# test_sents_file = 'd:/data/aspect/semeval15/restaurants/restaurants_test_sents.json'
-# test_tok_text_file = 'd:/data/aspect/semeval15/restaurants/restaurants_test_texts_tokfc.txt'
-# output_file = 'data/prep_data/restaurants15-dhl.npz'
-# output_tokens_file = 'data/prep_data/restaurants15-dhl-test-raw.json'
+train_sents_file = 'd:/data/aspect/semeval15/restaurants/restaurants_train_sents.json'
+train_tok_text_file = 'd:/data/aspect/semeval15/restaurants/restaurants_train_texts_tokfc.txt'
+test_sents_file = 'd:/data/aspect/semeval15/restaurants/restaurants_test_sents.json'
+test_tok_text_file = 'd:/data/aspect/semeval15/restaurants/restaurants_test_texts_tokfc.txt'
+output_file = 'data/prep_data/restaurants15-dhl.npz'
+output_tokens_file = 'data/prep_data/restaurants15-dhl-test-raw.json'
+__prep_dataset(train_sents_file, train_tok_text_file, test_sents_file, test_tok_text_file,
+               token_id_file, output_file, output_tokens_file)
 
 # data = np.load(output_file)
 # print(data['test_X'])
