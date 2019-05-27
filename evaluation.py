@@ -233,11 +233,17 @@ def evaluate(runs, data_dir, model_dir, domain, command, template):
         results.append(result)
     print(sum(results)/len(results) )
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
+    from platform import platform
+    if platform().startswith('Windows'):
+        model_dir = 'd:/data/aspect/models/'
+    else:
+        model_dir = '/home/hldai/data/aspect/models/'
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--runs', type=int, default=1)
     parser.add_argument('--data_dir', type=str, default="data/prep_data/")
-    parser.add_argument('--model_dir', type=str, default="model/")
+    parser.add_argument('--model_dir', type=str, default=model_dir)
     parser.add_argument('--domain', type=str, default="laptop")
 
     args = parser.parse_args()
