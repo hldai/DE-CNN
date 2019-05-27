@@ -18,7 +18,7 @@ def gen_np_embedding(fn, word_idx_fn, out_fn, dim=300):
         for w in word_idx:
             if embedding[word_idx[w] ].sum()==0.:
                 fw.write(w+"\n")
-    np.save(out_fn+".npy", embedding.astype('float32') )
+    np.save(out_fn+".npy", embedding.astype('float32'))
 
 
 # embed_data_dir = "data/embedding/"

@@ -110,12 +110,19 @@ token_id_file = 'data/prep_data/word_idx.json'
 # output_file = 'data/prep_data/laptops14-dhl.npz'
 # output_tokens_file = 'data/prep_data/laptops14-dhl-test-raw.json'
 
-train_sents_file = 'd:/data/aspect/semeval14/restaurants/restaurants_train_sents.json'
-train_tok_text_file = 'd:/data/aspect/semeval14/restaurants/restaurants_train_texts_tokfc.txt'
-test_sents_file = 'd:/data/aspect/semeval14/restaurants/restaurants_test_sents.json'
-test_tok_text_file = 'd:/data/aspect/semeval14/restaurants/restaurants_test_texts_tokfc.txt'
-output_file = 'data/prep_data/restaurants14-dhl.npz'
-output_tokens_file = 'data/prep_data/restaurants14-dhl-test-raw.json'
+# train_sents_file = 'd:/data/aspect/semeval14/restaurants/restaurants_train_sents.json'
+# train_tok_text_file = 'd:/data/aspect/semeval14/restaurants/restaurants_train_texts_tokfc.txt'
+# test_sents_file = 'd:/data/aspect/semeval14/restaurants/restaurants_test_sents.json'
+# test_tok_text_file = 'd:/data/aspect/semeval14/restaurants/restaurants_test_texts_tokfc.txt'
+# output_file = 'data/prep_data/restaurants14-dhl.npz'
+# output_tokens_file = 'data/prep_data/restaurants14-dhl-test-raw.json'
+
+train_sents_file = 'd:/data/aspect/semeval15/restaurants/restaurants_train_sents.json'
+train_tok_text_file = 'd:/data/aspect/semeval15/restaurants/restaurants_train_texts_tokfc.txt'
+test_sents_file = 'd:/data/aspect/semeval15/restaurants/restaurants_test_sents.json'
+test_tok_text_file = 'd:/data/aspect/semeval15/restaurants/restaurants_test_texts_tokfc.txt'
+output_file = 'data/prep_data/restaurants15-dhl.npz'
+output_tokens_file = 'data/prep_data/restaurants15-dhl-test-raw.json'
 
 __prep_dataset(train_sents_file, train_tok_text_file, test_sents_file, test_tok_text_file,
                token_id_file, output_file, output_tokens_file)
