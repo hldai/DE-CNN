@@ -341,10 +341,10 @@ def test(model, test_X, raw_X, domain, command, template, batch_size=128, crf=Fa
         return float(acc[9][10:])
     elif domain=='laptop':
         label_laptop_xml(template, command[4], raw_X, pred_y)
-        acc=check_output(command ).split()
-        print(acc)
-        return float(acc[15])
-        # return 0.0
+        # acc=check_output(command ).split()
+        # print(acc)
+        # return float(acc[15])
+        return 0.0
 
 def evaluate(runs, data_dir, model_dir, domain, command, template):
     ae_data=np.load(data_dir+domain+".npz")
@@ -380,12 +380,12 @@ if __name__ == "__main__":
         command="java -cp script/eval.jar Main.Aspects data/official_data/pred.xml data/official_data/Laptops_Test_Gold.xml"
         template="data/official_data/Laptops_Test_Data_PhaseA.xml"
 
-    # evaluate(args.runs, args.data_dir, args.model_dir, args.domain, command, template)
+    evaluate(args.runs, args.data_dir, args.model_dir, args.domain, command, template)
 
     # data_file = 'data/prep_data/laptops14-dhl-test.npz'
     data_file = 'data/prep_data/laptop.npz'
     text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
     pred_file = 'data/official_data/pred-dhl.xml'
     gold_file = 'data/official_data/Laptops_Test_Gold.xml'
-    evaluate_dhl(args.runs, data_file, text_file, args.model_dir, args.domain, template, gold_file, pred_file)
+    # evaluate_dhl(args.runs, data_file, text_file, args.model_dir, args.domain, template, gold_file, pred_file)
     # __calc_f1(gold_file, pred_file)
