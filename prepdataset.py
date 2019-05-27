@@ -62,19 +62,10 @@ def data_from_sents_file(sents, words_list, word_idx_dict):
     return labels_list, word_idxs_list
 
 
-def __prep_dataset(sents_file, tok_text_file, token_id_file, output_data_file, output_tokens_file):
-    with open(token_id_file, encoding='utf-8') as f:
-        word_idx_dict = json.loads(f.read())
-
-    with open(tok_text_file, encoding='utf-8') as f:
-        tok_texts = [line.strip() for line in f]
+def __get_data(sents_file, words_list, word_idx_dict):
 
     with open(sents_file, encoding='utf-8') as f:
         sents = [json.loads(line) for line in f]
-
-    words_list = [text.split(' ') for text in tok_texts]
-    with open(output_tokens_file, 'w', encoding='utf-8') as fout:
-        fout.write('{}\n'.format(json.dumps(words_list)))
 
     labels_list, word_idxs_list = data_from_sents_file(sents, words_list, word_idx_dict)
     max_sent_len = 83
@@ -87,17 +78,37 @@ def __prep_dataset(sents_file, tok_text_file, token_id_file, output_data_file, o
     for i, labels in enumerate(labels_list):
         for j, l in enumerate(labels):
             y[i][j] = l
-    # data = dict()
-    # data['test_X'] = X
-    # data['test_y'] = y
-    np.savez(output_file, test_X=X, test_y=y)
+    return X, y
 
 
-sents_file = 'd:/data/aspect/semeval14/laptops/laptops_test_sents.json'
-tok_text_file = 'd:/data/aspect/semeval14/laptops/laptops_test_texts_tokfc.txt'
+def __prep_dataset(train_sents_file, train_tok_text_file, test_sents_file, test_tok_text_file,
+                   token_id_file, output_data_file, output_tokens_file):
+    with open(token_id_file, encoding='utf-8') as f:
+        word_idx_dict = json.loads(f.read())
+
+    with open(train_tok_text_file, encoding='utf-8') as f:
+        tok_texts = [line.strip() for line in f]
+    words_list = [text.split(' ') for text in tok_texts]
+    train_X, train_y = __get_data(train_sents_file, words_list, word_idx_dict)
+
+    with open(test_tok_text_file, encoding='utf-8') as f:
+        tok_texts = [line.strip() for line in f]
+    words_list = [text.split(' ') for text in tok_texts]
+    test_X, test_y = __get_data(test_sents_file, words_list, word_idx_dict)
+    with open(output_tokens_file, 'w', encoding='utf-8') as fout:
+        fout.write('{}\n'.format(json.dumps(words_list)))
+
+    np.savez(output_data_file, train_X=train_X, train_y=train_y, test_X=test_X, test_y=test_y)
+
+
+train_sents_file = 'd:/data/aspect/semeval14/laptops/laptops_train_sents.json'
+train_tok_text_file = 'd:/data/aspect/semeval14/laptops/laptops_train_texts_tokfc.txt'
+test_sents_file = 'd:/data/aspect/semeval14/laptops/laptops_test_sents.json'
+test_tok_text_file = 'd:/data/aspect/semeval14/laptops/laptops_test_texts_tokfc.txt'
 token_id_file = 'data/prep_data/word_idx.json'
-output_file = 'data/prep_data/laptops14-dhl-test.npz'
+output_file = 'data/prep_data/laptops14-dhl.npz'
 output_tokens_file = 'data/prep_data/laptops14-dhl-test-raw.json'
-__prep_dataset(sents_file, tok_text_file, token_id_file, output_file, output_tokens_file)
+__prep_dataset(train_sents_file, train_tok_text_file, test_sents_file, test_tok_text_file,
+               token_id_file, output_file, output_tokens_file)
 # data = np.load(output_file)
 # print(data['test_X'])

@@ -115,18 +115,16 @@ def train(train_X, train_y, valid_X, valid_y, model, model_fn, optimizer, parame
     model=torch.load(model_fn) 
     return train_history, valid_history
 
-def run(domain, data_dir, model_dir, valid_split, runs, epochs, lr, dropout, batch_size=128):
+def run(domain, data_file, data_dir, model_dir, valid_split, runs, epochs, lr, dropout, batch_size=128):
 #    gen_emb=np.load(data_dir+"gen.vec.npy")
     gen_emb=np.load(data_dir+"glove.840B.300d.txt.npy")
     domain_emb=np.load(data_dir+domain+"_emb.vec.npy")
-    ae_data=np.load(data_dir+domain+".npz")
+    ae_data=np.load(data_file)
     
     valid_X=ae_data['train_X'][-valid_split:]
     valid_y=ae_data['train_y'][-valid_split:]
     train_X=ae_data['train_X'][:-valid_split]
     train_y=ae_data['train_y'][:-valid_split]
-    print(train_X.shape)
-    exit()
 
     for r in range(runs):
         print(r)
@@ -148,7 +146,7 @@ if __name__ == "__main__":
     parser.add_argument('--model_dir', type=str, default=model_dir)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--epochs', type=int, default=200) 
-    parser.add_argument('--runs', type=int, default=5)
+    parser.add_argument('--runs', type=int, default=2)
     parser.add_argument('--domain', type=str, default="laptop")
     parser.add_argument('--data_dir', type=str, default="data/prep_data/")
     parser.add_argument('--valid', type=int, default=150) #number of validation data.
@@ -157,5 +155,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    run(args.domain, args.data_dir, args.model_dir, args.valid, args.runs, args.epochs, args.lr, args.dropout, args.batch_size)
+    data_file = 'data/prep_data/laptops14-dhl.npz'
+    run(args.domain, data_file, args.data_dir, args.model_dir, args.valid, args.runs, args.epochs, args.lr,
+        args.dropout, args.batch_size)
 
