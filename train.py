@@ -82,7 +82,9 @@ def valid_loss(model, valid_X, valid_y, crf=False):
     for batch in batch_generator(valid_X, valid_y, crf=crf):
         batch_valid_X, batch_valid_y, batch_valid_X_len, batch_valid_X_mask=batch
         loss=model(batch_valid_X, batch_valid_X_len, batch_valid_X_mask, batch_valid_y)
-        losses.append(loss.data[0])
+        # print(loss.data.cpu().numpy())
+        # losses.append(loss.data[0])
+        losses.append(loss.data.cpu().numpy())
     model.train()
     return sum(losses)/len(losses)
 
@@ -130,9 +132,16 @@ def run(domain, data_dir, model_dir, valid_split, runs, epochs, lr, dropout, bat
         optimizer=torch.optim.Adam(parameters, lr=lr)
         train_history, valid_history=train(train_X, train_y, valid_X, valid_y, model, model_dir+domain+str(r), optimizer, parameters, epochs, crf=False)
 
+
 if __name__ == "__main__":
+    from platform import platform
+    if platform().startswith('Windows'):
+        model_dir = 'd:/data/aspect/models/'
+    else:
+        model_dir = '/home/hldai/data/aspect/models/'
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_dir', type=str, default="model/")
+    parser.add_argument('--model_dir', type=str, default=model_dir)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--epochs', type=int, default=200) 
     parser.add_argument('--runs', type=int, default=5)
