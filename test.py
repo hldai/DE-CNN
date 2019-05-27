@@ -203,34 +203,6 @@ def __get_sent_objs_se14_xml(file_name):
     return sent_objs
 
 
-def __get_sent_objs_se14(file_text, from_term_to=False):
-    import re
-    sents = list()
-    sent_pattern = r'<sentence id="(.*?)">\s*<text>(.*?)</text>\s*(.*?)</sentence>'
-    if from_term_to:
-        aspect_term_pattern = r'<aspectTerm\s*from="(\d*)"\s*term="(.*?)"\s*?to="(\d*)"\s*/>'
-        term_idx, from_idx, to_idx = 2, 1, 3
-    else:
-        aspect_term_pattern = r'<aspectTerm\s*term="(.*?)".*?from="(\d*)"\s*to="(\d*)"/>'
-        term_idx, from_idx, to_idx = 1, 2, 3
-    miter = re.finditer(sent_pattern, file_text, re.DOTALL)
-    for i, m in enumerate(miter):
-        sent = {'id': m.group(1), 'text': m.group(2)}
-        aspect_terms = list()
-        miter_terms = re.finditer(aspect_term_pattern, m.group(3))
-        for m_terms in miter_terms:
-            # print(m_terms.group(1), m_terms.group(2), m_terms.group(3))
-            # aspect_terms.append(
-            #     {'term': m_terms.group(1), 'polarity': m_terms.group(2), 'from': int(m_terms.group(3)),
-            #      'to': int(m_terms.group(4))})
-            aspect_terms.append(
-                {'term': m_terms.group(term_idx), 'span': (int(m_terms.group(from_idx)), int(m_terms.group(to_idx)))})
-        if aspect_terms:
-            sent['terms'] = aspect_terms
-        sents.append(sent)
-    return sents
-
-
 def __count_hit(terms_true, terms_pred):
     terms_true, terms_pred = terms_true.copy(), terms_pred.copy()
     terms_true.sort()
@@ -401,8 +373,8 @@ if __name__ == "__main__":
     # evaluate(args.runs, args.data_dir, args.model_dir, args.domain, command, template)
 
     # args.domain = 're15'
-    args.domain = 'laptop'
-    if args.domain=='laptop':
+    # args.domain = 'laptop'
+    if args.domain == 'laptop':
         # data_file = 'data/prep_data/laptop.npz'
         data_file = 'data/prep_data/laptops14-dhl.npz'
         text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
