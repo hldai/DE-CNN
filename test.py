@@ -187,6 +187,22 @@ def label_laptop_xml(fn, output_fn, corpus, label):
     dom.write(output_fn)
 
 
+def __get_sent_objs_se14_xml(file_name):
+    dom = ET.parse(file_name)
+    root = dom.getroot()
+    sent_objs = list()
+    for sent in root.iter('sentence'):
+        sent_obj = {'id': sent.attrib['id'], 'text': sent.find('text').text}
+        terms = list()
+        for term_elem in sent.iter('aspectTerm'):
+            # print(term_elem.attrib['term'])
+            terms.append({'term': term_elem.attrib['term'], 'span': (
+                int(term_elem.attrib['from']), int(term_elem.attrib['to']))})
+        sent_obj['terms'] = terms
+        sent_objs.append(sent_obj)
+    return sent_objs
+
+
 def __get_sent_objs_se14(file_text, from_term_to=False):
     import re
     sents = list()
@@ -240,12 +256,8 @@ def prf1(n_true, n_sys, n_hit):
 
 
 def __calc_f1(true_file, pred_file):
-    with open(true_file, encoding='utf-8') as f:
-        text_all = f.read()
-        sents_true = __get_sent_objs_se14(text_all)
-    with open(pred_file, encoding='utf-8') as f:
-        text_all = f.read()
-        sents_pred = __get_sent_objs_se14(text_all, from_term_to=True)
+    sents_true = __get_sent_objs_se14_xml(true_file)
+    sents_pred = __get_sent_objs_se14_xml(pred_file)
 
     def sents_to_dict(sents):
         sents_dict = dict()
@@ -302,15 +314,14 @@ def test_dhl(model, test_X, raw_X, domain, template, gold_file, pred_file, batch
 
 
 def evaluate_dhl(runs, data_file, text_file, model_dir, domain, template, gold_file, pred_file):
-    ae_data=np.load(data_file)
+    ae_data = np.load(data_file)
 
     with open(text_file) as f:
-        raw_X=json.load(f)
-    results=[]
+        raw_X = json.load(f)
+    results = []
     for r in range(runs):
-        model=torch.load(model_dir+domain+str(r))
-        result=test_dhl(model, ae_data['test_X'], raw_X, domain, template, gold_file, pred_file, crf=False)
-        # results.append(result)
+        # model = torch.load(model_dir + domain + str(r))
+        # result = test_dhl(model, ae_data['test_X'], raw_X, domain, template, gold_file, pred_file, crf=False)
         cur_f1 = __calc_f1(gold_file, pred_file)
         results.append(cur_f1)
     print(sum(results)/len(results))
@@ -389,6 +400,8 @@ if __name__ == "__main__":
 
     # evaluate(args.runs, args.data_dir, args.model_dir, args.domain, command, template)
 
+    # args.domain = 're15'
+    args.domain = 'laptop'
     if args.domain=='laptop':
         # data_file = 'data/prep_data/laptop.npz'
         data_file = 'data/prep_data/laptops14-dhl.npz'
