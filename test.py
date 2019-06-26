@@ -227,6 +227,16 @@ def prf1(n_true, n_sys, n_hit):
     return p, r, f1
 
 
+def __get_terms_true(terms):
+    term_span_set = set()
+    term_values = list()
+    for t in terms:
+        if t['span'] not in term_span_set:
+            term_span_set.add(t['span'])
+            term_values.append(t['term'])
+    return term_values
+
+
 def __calc_f1(true_file, pred_file):
     sents_true = __get_sent_objs_se14_xml(true_file)
     sents_pred = __get_sent_objs_se14_xml(pred_file)
@@ -242,7 +252,8 @@ def __calc_f1(true_file, pred_file):
     true_cnt, sys_cnt, hit_cnt = 0, 0, 0
     for sent_id, sent_true in sents_dict_true.items():
         sent_pred = sents_dict_pred[sent_id]
-        terms_true = [t['term'] for t in sent_true.get('terms', list())]
+        # terms_true = [t['term'] for t in sent_true.get('terms', list())]
+        terms_true = __get_terms_true(sent_true.get('terms', list()))
         terms_pred = [t['term'] for t in sent_pred.get('terms', list())]
         true_cnt += len(terms_true)
         sys_cnt += len(terms_pred)
