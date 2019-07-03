@@ -139,9 +139,9 @@ def run(domain, data_file, data_dir, model_dir, valid_split, runs, epochs, lr, d
 if __name__ == "__main__":
     from platform import platform
     if platform().startswith('Windows'):
-        model_dir = 'd:/data/aspect/models/'
+        model_dir = 'd:/data/aspect/decnn-models/'
     else:
-        model_dir = '/home/hldai/data/aspect/models/'
+        model_dir = '/home/hldai/data/aspect/decnn-models/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_dir', type=str, default=model_dir)
