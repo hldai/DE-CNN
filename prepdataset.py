@@ -1,42 +1,6 @@
 import json
 import numpy as np
-
-
-def __find_sub_words_seq(words, sub_words):
-    i, li, lj = 0, len(words), len(sub_words)
-    while i + lj <= li:
-        j = 0
-        while j < lj:
-            if words[i + j] != sub_words[j]:
-                break
-            j += 1
-        if j == lj:
-            return i
-        i += 1
-    return -1
-
-
-def __label_words_with_terms(words, terms, label_val_beg, label_val_in, x):
-    for term in terms:
-        # term_words = term.lower().split(' ')
-        term_words = term.split(' ')
-        pbeg = __find_sub_words_seq(words, term_words)
-        if pbeg == -1:
-            print(words)
-            print(terms)
-            print()
-            continue
-        x[pbeg] = label_val_beg
-        for p in range(pbeg + 1, pbeg + len(term_words)):
-            x[p] = label_val_in
-
-
-def label_sentence(words, aspect_terms):
-    label_val_beg, label_val_in = 1, 2
-
-    x = np.zeros(len(words), np.int32)
-    __label_words_with_terms(words, aspect_terms, label_val_beg, label_val_in, x)
-    return x
+import utils
 
 
 def __get_word_idx_sequence(words_list, word_idx_dict, unk_id=1):
@@ -56,7 +20,7 @@ def data_from_sents_file(sents, words_list, word_idx_dict):
         aspect_objs = sent.get('terms', list())
         aspect_terms = [t['term'] for t in aspect_objs]
 
-        x = label_sentence(sent_words, aspect_terms)
+        x = utils.label_sentence(sent_words, aspect_terms)
         labels_list.append(x)
 
     return labels_list, word_idxs_list

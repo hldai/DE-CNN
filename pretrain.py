@@ -3,6 +3,8 @@ import os
 import torch
 import numpy as np
 import random
+import json
+import utils
 import datautils
 from decnn import batch_generator, Model
 
@@ -12,30 +14,67 @@ torch.manual_seed(1337)
 # torch.cuda.manual_seed(1337)
 
 
+def __get_numpy_data(word_idx_seqs, label_seqs, max_sent_len):
+    X = np.zeros((len(word_idx_seqs), max_sent_len), np.int32)
+    y = np.zeros((len(label_seqs), max_sent_len), np.int32)
+
+    for i, word_idxs in enumerate(word_idx_seqs):
+        for j, widx in enumerate(word_idxs):
+            X[i][j] = widx
+    for i, labels in enumerate(label_seqs):
+        for j, l in enumerate(labels):
+            y[i][j] = l
+    return X, y
+
+
 def get_data(tok_texts_file, tokfc_texts_file, terms_file, token_id_file):
+    unk_id = 1
+    max_sent_len = 83
     terms_true_list = datautils.load_json_objs(terms_file)
 
+    with open(token_id_file, encoding='utf-8') as f:
+        word_idx_dict = json.loads(f.read())
+
+    word_idx_seqs, label_seqs = list(), list()
     f_tok = open(tok_texts_file, encoding='utf-8')
     f_tokfc = open(tokfc_texts_file, encoding='utf-8')
     for i, (line_tok, line_tokfc) in enumerate(zip(f_tok, f_tokfc)):
-        if i > 10:
-            break
-        print(line_tok.strip())
-        print(line_tokfc.strip())
+        words_tok = line_tok.strip().split(' ')
+        if len(words_tok) > max_sent_len or len(words_tok) == 0:
+            continue
 
-        # word_idxs_list = __get_word_idx_sequence(words_list, word_idx_dict)
-        # len_max = max([len(words) for words in words_list])
-        # print('max sentence len:', len_max)
-        #
-        # labels_list = list()
-        # for sent_idx, (sent, sent_words) in enumerate(zip(sents, words_list)):
-        #     aspect_objs = sent.get('terms', list())
-        #     aspect_terms = [t['term'] for t in aspect_objs]
-        #
-        #     x = label_sentence(sent_words, aspect_terms)
-        #     labels_list.append(x)
+        words_tokfc = line_tokfc.strip().split(' ')
+        if len(words_tok) != len(words_tokfc):
+            continue
 
-    # return labels_list, word_idxs_list
+        word_idx_seq = [word_idx_dict.get(w, unk_id) for w in words_tokfc]
+        aspect_terms = terms_true_list[i]
+
+        label_seq = utils.label_sentence(words_tok, aspect_terms)
+
+        word_idx_seqs.append(word_idx_seq)
+        label_seqs.append(label_seq)
+        # if i > 10:
+        #     break
+
+    perm = np.random.permutation(len(word_idx_seqs))
+    n_train = len(word_idx_seqs) - 2000
+    idxs_valid = set(perm[n_train:])
+
+    train_word_idx_seqs, dev_word_idx_seqs = list(), list()
+    train_label_seqs, dev_label_seqs = list(), list()
+
+    for i in range(len(word_idx_seqs)):
+        if i in idxs_valid:
+            dev_word_idx_seqs.append(word_idx_seqs[i])
+            dev_label_seqs.append(label_seqs[i])
+        else:
+            train_word_idx_seqs.append(word_idx_seqs[i])
+            train_label_seqs.append(label_seqs[i])
+
+    X_train, y_train = __get_numpy_data(train_word_idx_seqs, train_label_seqs, max_sent_len)
+    X_dev, y_dev = __get_numpy_data(dev_word_idx_seqs, dev_label_seqs, max_sent_len)
+    return X_train, y_train, X_dev, y_dev
 
 
 def valid_loss(model, valid_X, valid_y, crf=False):
@@ -51,52 +90,45 @@ def valid_loss(model, valid_X, valid_y, crf=False):
     return sum(losses) / len(losses)
 
 
-def __pretrain(tok_texts_file, tokfc_texts_file, terms_file, token_id_file,
-               n_epochs, batch_size, use_crf=False):
-    get_data(tok_texts_file, tokfc_texts_file, terms_file, token_id_file)
-    exit()
+def __pretrain(gen_emb_file, domain_emb_file, tok_texts_file, tokfc_texts_file, terms_file, token_id_file,
+               n_epochs, batch_size, lr=0.0001, dropout=0.5, use_crf=False, output_file=None):
+    X_train, y_train, X_dev, y_dev = get_data(tok_texts_file, tokfc_texts_file, terms_file, token_id_file)
+    # print(X_train.shape, y_train.shape)
+    # exit()
+    gen_emb = np.load(gen_emb_file)
+    domain_emb = np.load(domain_emb_file)
+
+    model = Model(gen_emb, domain_emb, 3, dropout=dropout, crf=False)
+    model.cuda()
+    parameters = [p for p in model.parameters() if p.requires_grad]
+    optimizer = torch.optim.Adam(parameters, lr=lr)
 
     best_loss = float("inf")
+    i_batch = 0
+    losses_train = list()
     for epoch in range(n_epochs):
-        for batch in batch_generator(train_X, train_y, batch_size, crf=use_crf):
+        for batch in batch_generator(X_train, y_train, batch_size, crf=use_crf):
             batch_train_X, batch_train_y, batch_train_X_len, batch_train_X_mask = batch
             loss = model(batch_train_X, batch_train_X_len, batch_train_X_mask, batch_train_y)
+            losses_train.append(loss.data.cpu().numpy())
             optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm(parameters, 1.)
             optimizer.step()
-        loss = valid_loss(model, train_X, train_y, crf=use_crf)
-        loss = valid_loss(model, valid_X, valid_y, crf=use_crf)
-        print('l_v={:.4f}'.format(loss))
-        if loss < best_loss:
-            best_loss = loss
-            torch.save(model, model_fn)
-            print('model saved to {}'.format(model_fn))
-        shuffle_idx = np.random.permutation(len(train_X))
-        train_X = train_X[shuffle_idx]
-        train_y = train_y[shuffle_idx]
-
-
-def run(domain, data_file, data_dir, model_dir, valid_split, runs, epochs, lr, dropout, batch_size=128):
-    #    gen_emb=np.load(data_dir+"gen.vec.npy")
-    gen_emb = np.load(data_dir + "glove.840B.300d.txt.npy")
-    domain_emb = np.load(data_dir + domain + "_emb.vec.npy")
-    print(data_file)
-    ae_data = np.load(data_file)
-
-    valid_X = ae_data['train_X'][-valid_split:]
-    valid_y = ae_data['train_y'][-valid_split:]
-    train_X = ae_data['train_X'][:-valid_split]
-    train_y = ae_data['train_y'][:-valid_split]
-
-    for r in range(runs):
-        print(r)
-        model = Model(gen_emb, domain_emb, 3, dropout=dropout, crf=False)
-        model.cuda()
-        parameters = [p for p in model.parameters() if p.requires_grad]
-        optimizer = torch.optim.Adam(parameters, lr=lr)
-        train_history, valid_history = train(train_X, train_y, valid_X, valid_y, model, model_dir + domain + str(r),
-                                             optimizer, parameters, epochs, crf=False)
+            # loss = valid_loss(model, train_X, train_y, crf=use_crf)
+            i_batch += 1
+            if i_batch % 1000 == 0:
+                loss = valid_loss(model, X_dev, y_dev, crf=use_crf)
+                # print(losses_train)
+                print('{} {} l_t={:.4f} l_v={:.4f}'.format(epoch, i_batch, sum(losses_train), loss))
+                losses_train = list()
+                if loss < best_loss:
+                    best_loss = loss
+                    torch.save(model, output_file)
+                    print('model saved to {}'.format(output_file))
+        # shuffle_idx = np.random.permutation(len(X_train))
+        # X_train = X_train[shuffle_idx]
+        # y_train = y_train[shuffle_idx]
 
 
 if __name__ == "__main__":
@@ -111,23 +143,15 @@ if __name__ == "__main__":
         data_dir = '/home/hldai/data/aspect'
         amazon_dir = '/home/hldai/data/res/amazon/'
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model_dir', type=str, default=model_dir)
-    parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--epochs', type=int, default=200)
-    parser.add_argument('--runs', type=int, default=2)
-    parser.add_argument('--domain', type=str, default="laptop")
-    parser.add_argument('--data_dir', type=str, default="data/prep_data/")
-    parser.add_argument('--valid', type=int, default=150)  # number of validation data.
-    parser.add_argument('--lr', type=float, default=0.0001)
-    parser.add_argument('--dropout', type=float, default=0.55)
-
-    args = parser.parse_args()
+    gen_emb_file = 'data/prep_data/glove.840B.300d.txt.npy'
+    domain_emb_file = 'data/prep_data/laptop_emb.vec.npy'
 
     tok_texts_file = os.path.join(amazon_dir, 'laptops-reivews-sent-tok-text.txt')
     tokfc_texts_file = os.path.join(amazon_dir, 'laptops-reivews-sent-text-tokfc.txt')
-    terms_file = os.path.join(data_dir, 'amazon-laptops-aspect-rm-rule-result.txt')
+    terms_file = os.path.join(data_dir, 'semeval14/laptops/amazon-laptops-aspect-rm-rule-result.txt')
     token_id_file = 'data/prep_data/word_idx_dhl.json'
+    output_model_file = os.path.join(data_dir, 'decnndata/laptops-decnn.pth')
     n_epochs = 35
     batch_size = 32
-    __pretrain(tok_texts_file, tokfc_texts_file, terms_file, token_id_file, n_epochs, batch_size)
+    __pretrain(gen_emb_file, domain_emb_file, tok_texts_file, tokfc_texts_file, terms_file, token_id_file,
+               n_epochs, batch_size, output_file=output_model_file)
