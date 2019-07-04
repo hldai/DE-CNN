@@ -38,27 +38,8 @@ def label_sentence(words, aspect_terms):
     return x
 
 
-def calc_f1(true_file, pred_file):
-    sents_true = __get_sent_objs_se14_xml(true_file)
-    sents_pred = __get_sent_objs_se14_xml(pred_file)
-
-    def sents_to_dict(sents):
-        sents_dict = dict()
-        for sent in sents:
-            sents_dict[sent['id']] = sent
-        return sents_dict
-
-    sents_dict_true = sents_to_dict(sents_true)
-    sents_dict_pred = sents_to_dict(sents_pred)
-    true_cnt, sys_cnt, hit_cnt = 0, 0, 0
-    for sent_id, sent_true in sents_dict_true.items():
-        sent_pred = sents_dict_pred[sent_id]
-        # terms_true = [t['term'] for t in sent_true.get('terms', list())]
-        terms_true = __get_terms_true(sent_true.get('terms', list()))
-        terms_pred = [t['term'] for t in sent_pred.get('terms', list())]
-        true_cnt += len(terms_true)
-        sys_cnt += len(terms_pred)
-        hit_cnt += __count_hit(terms_true, terms_pred)
-    p, r, f1 = prf1(true_cnt, sys_cnt, hit_cnt)
-    print(p, r, f1)
-    return f1
+def get_machine_name():
+    import socket
+    hostname = socket.gethostname()
+    dot_pos = hostname.find('.')
+    return hostname[:dot_pos] if dot_pos > -1 else hostname[:]

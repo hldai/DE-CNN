@@ -156,8 +156,8 @@ def label_laptop_xml(fn, output_fn, corpus, label):
                 tag_on=False 
                 opin=ET.Element("aspectTerm")
                 opin.attrib['term']=sent.find('text').text[start:end]
-                if not sent.find('text').text[start:end].endswith(tokens[token_idx - 1]):
-                    print(sent.find('text').text[start:end], tokens[token_idx - 1])
+                # if not sent.find('text').text[start:end].endswith(tokens[token_idx - 1]):
+                #     print(sent.find('text').text[start:end], tokens[token_idx - 1])
                 opin.attrib['from']=str(start)
                 opin.attrib['to']=str(end)
                 opins.append(opin)
@@ -304,6 +304,7 @@ def evaluate_dhl(runs, data_file, text_file, model_dir, domain, template, gold_f
     results = []
     for r in range(runs):
         model = torch.load(model_dir + domain + str(r))
+        # model = torch.load('/home/hldai/data/aspect/decnndata/laptops-decnn-ri0')
         result = test_dhl(model, ae_data['test_X'], raw_X, domain, template, gold_file, pred_file, crf=False)
         cur_f1 = __calc_f1(gold_file, pred_file)
         results.append(cur_f1)
@@ -362,9 +363,9 @@ def evaluate(runs, data_dir, model_dir, domain, command, template):
 if __name__ == "__main__":
     from platform import platform
     if platform().startswith('Windows'):
-        model_dir = 'd:/data/aspect/models/'
+        model_dir = 'd:/data/aspect/decnndata/'
     else:
-        model_dir = '/home/hldai/data/aspect/models/'
+        model_dir = '/home/hldai/data/aspect/decnndata/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--runs', type=int, default=2)
@@ -386,9 +387,10 @@ if __name__ == "__main__":
     # args.domain = 're15'
     # args.domain = 'laptop'
     if args.domain == 'laptop':
-        # data_file = 'data/prep_data/laptop.npz'
-        data_file = 'data/prep_data/laptops14-dhl.npz'
-        text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
+        data_file = 'data/prep_data/laptop.npz'
+        text_file = 'data/prep_data/laptop_raw_test.json'
+        # data_file = 'data/prep_data/laptops14-dhl.npz'
+        # text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
         pred_file = 'data/official_data/pred-dhl-lap.xml'
         gold_file = 'data/official_data/Laptops_Test_Gold.xml'
         template = "data/official_data/Laptops_Test_Data_PhaseA.xml"

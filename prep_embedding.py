@@ -23,7 +23,7 @@ def gen_np_embedding(fn, word_idx_fn, out_fn, dim=300):
 
 # embed_data_dir = "data/embedding/"
 # gen_emb_file = 'gen.vec'
-embed_data_dir = 'd:/data/res/wordvecs/'
+embed_data_dir = '/home/hldai/data/res/wordvecs/'
 gen_emb_file = 'glove.840B.300d.txt'
 parser = argparse.ArgumentParser()
 parser.add_argument('--emb_dir', type=str, default=embed_data_dir)
@@ -31,7 +31,8 @@ parser.add_argument('--out_dir', type=str, default="data/prep_data/")
 parser.add_argument('--gen_emb', type=str, default=gen_emb_file)
 parser.add_argument('--laptop_emb', type=str, default="laptop_emb.vec")
 parser.add_argument('--restaurant_emb', type=str, default="restaurant_emb.vec")
-parser.add_argument('--word_idx', type=str, default="word_idx_dhl.json")
+# parser.add_argument('--word_idx', type=str, default="word_idx_dhl.json")
+parser.add_argument('--word_idx', type=str, default="word_idx.json")
 parser.add_argument('--gen_dim', type=int, default=300)
 parser.add_argument('--domain_dim', type=int, default=100)
 args = parser.parse_args()

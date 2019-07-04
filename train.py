@@ -139,9 +139,9 @@ def run(domain, data_file, data_dir, model_dir, valid_split, runs, epochs, lr, d
 if __name__ == "__main__":
     from platform import platform
     if platform().startswith('Windows'):
-        model_dir = 'd:/data/aspect/decnn-models/'
+        model_dir = 'd:/data/aspect/decnndata/'
     else:
-        model_dir = '/home/hldai/data/aspect/decnn-models/'
+        model_dir = '/home/hldai/data/aspect/decnndata/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_dir', type=str, default=model_dir)
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
     domain = 'laptop'
     if args.domain == 'laptop':
-        data_file = 'data/prep_data/laptops14-dhl.npz'
+        data_file = 'data/prep_data/laptop.npz'
     elif args.domain == 're14':
         data_file = 'data/prep_data/restaurants14-dhl.npz'
         domain = 'restaurant'

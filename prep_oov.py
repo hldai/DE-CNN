@@ -22,7 +22,8 @@ parser.add_argument('--restaurant_emb_np', type=str, default="restaurant_emb.vec
 parser.add_argument('--out_dir', type=str, default="data/prep_data/")
 parser.add_argument('--laptop_oov', type=str, default="laptop_oov.vec")
 parser.add_argument('--restaurant_oov', type=str, default="restaurant_oov.vec")
-parser.add_argument('--word_idx', type=str, default="word_idx_dhl.json")
+# parser.add_argument('--word_idx', type=str, default="word_idx_dhl.json")
+parser.add_argument('--word_idx', type=str, default="word_idx.json")
 args = parser.parse_args()
 
 fill_np_embedding(args.out_dir+args.laptop_emb_np, args.out_dir+args.word_idx, args.out_dir+args.laptop_oov)

@@ -43,8 +43,8 @@ def label_terms(sent_texts, token_seqs, label_seqs):
                 tag_on = False
                 term = sent_text[start:end]
                 terms.append(sent_text[start:end])
-                if not term.endswith(sent_tokens[token_idx - 1]):
-                    print(term, sent_tokens[token_idx - 1])
+                # if not term.endswith(sent_tokens[token_idx - 1]):
+                #     print(term, sent_tokens[token_idx - 1])
             elif token_idx >= len(sent_tokens) and tag_on:
                 end = ix
                 tag_on = False
@@ -60,7 +60,7 @@ def label_terms(sent_texts, token_seqs, label_seqs):
             end = len(sent_text)
             terms.append(sent_text[start:end])
         terms_list.append(terms)
-        print(sent_text, terms)
+        # print(sent_text, terms)
     return terms_list
 
 
@@ -88,7 +88,7 @@ def test_dhl(model, sent_texts, test_X, token_seqs, batch_size=128, crf=False):
     model.train()
     assert len(pred_y) == len(test_X)
     terms_list = label_terms(sent_texts, token_seqs, pred_y)
-    return 0
+    return terms_list
 
 
 def valid_loss(model, valid_X, valid_y, crf=False):
@@ -104,11 +104,46 @@ def valid_loss(model, valid_X, valid_y, crf=False):
     return sum(losses) / len(losses)
 
 
-def train(train_X, train_y, valid_X, valid_y, test_X, test_sents, test_token_seqs, model, model_fn, optimizer,
-          parameters, epochs=200, batch_size=128, crf=False):
+def __count_hit(terms_true, terms_pred):
+    terms_true, terms_pred = terms_true.copy(), terms_pred.copy()
+    terms_true.sort()
+    terms_pred.sort()
+    idx_pred = 0
+    cnt_hit = 0
+    for t in terms_true:
+        while idx_pred < len(terms_pred) and terms_pred[idx_pred] < t:
+            idx_pred += 1
+        if idx_pred == len(terms_pred):
+            continue
+        if terms_pred[idx_pred] == t:
+            cnt_hit += 1
+            idx_pred += 1
+    return cnt_hit
+
+
+def prf1(n_true, n_sys, n_hit):
+    p = n_hit / (n_sys + 1e-6)
+    r = n_hit / (n_true + 1e-6)
+    f1 = 2 * p * r / (p + r + 1e-6)
+    return p, r, f1
+
+
+def __get_performance(pred_terms_list, true_terms_list):
+    true_cnt, sys_cnt, hit_cnt = 0, 0, 0
+    for pred_terms, true_terms in zip(pred_terms_list, true_terms_list):
+        true_cnt += len(true_terms)
+        sys_cnt += len(pred_terms)
+        hit_cnt += __count_hit(true_terms, pred_terms)
+
+    p, r, f1 = prf1(true_cnt, sys_cnt, hit_cnt)
+    return f1
+
+
+def train(train_X, train_y, valid_X, valid_y, test_X, test_sents, test_token_seqs, true_test_terms_list,
+          model, model_fn, optimizer, parameters, epochs=200, batch_size=128, crf=False):
     best_loss = float("inf")
-    valid_history = []
-    train_history = []
+    # valid_history = []
+    # train_history = []
     for epoch in range(epochs):
         for batch in batch_generator(train_X, train_y, batch_size, crf=crf):
             batch_train_X, batch_train_y, batch_train_X_len, batch_train_X_mask = batch
@@ -117,40 +152,51 @@ def train(train_X, train_y, valid_X, valid_y, test_X, test_sents, test_token_seq
             loss.backward()
             torch.nn.utils.clip_grad_norm(parameters, 1.)
             optimizer.step()
-        loss = valid_loss(model, train_X, train_y, crf=crf)
-        train_history.append(loss)
+        # loss = valid_loss(model, train_X, train_y, crf=crf)
+        # train_history.append(loss)
         loss = valid_loss(model, valid_X, valid_y, crf=crf)
-        print('l_v={:.4f}'.format(loss))
-        valid_history.append(loss)
+        # valid_history.append(loss)
         if loss < best_loss:
-            test_dhl(model, test_sents, test_X, test_token_seqs, crf=False)
+            pred_terms_list = test_dhl(model, test_sents, test_X, test_token_seqs, crf=False)
             # cur_f1 = __calc_f1(gold_file, pred_file)
+            test_f1 = __get_performance(pred_terms_list, true_test_terms_list)
+            print('l_v={:.4f} t_f1={:.4f}'.format(loss, test_f1))
             best_loss = loss
             torch.save(model, model_fn)
             print('model saved to {}'.format(model_fn))
+        else:
+            print('l_v={:.4f}'.format(loss))
         shuffle_idx = np.random.permutation(len(train_X))
         train_X = train_X[shuffle_idx]
         train_y = train_y[shuffle_idx]
     # model = torch.load(model_fn)
-    return train_history, valid_history
+    # return train_history, valid_history
 
 
-def read_sent_texts(xml_file):
+def read_se14_xml(xml_file):
     root = ET.parse(xml_file).getroot()
-    sent_texts = list()
+    sent_texts, terms_list = list(), list()
     for i, sent in enumerate(root.iter("sentence")):
         sent_texts.append(sent.find('text').text)
-    return sent_texts
+
+        terms = list()
+        for term_elem in sent.iter('aspectTerm'):
+            # print(term_elem.attrib['term'])
+            terms.append(term_elem.attrib['term'])
+            # terms.append({'term': term_elem.attrib['term'], 'span': (
+            #     int(term_elem.attrib['from']), int(term_elem.attrib['to']))})
+        terms_list.append(terms)
+    return sent_texts, terms_list
 
 
-def train_ri(gen_emb_file, domain_emb_file, load_model_file, domain, data_file, test_xml_file, test_token_seqs_file,
-             output_model_prefix, data_dir, model_dir, valid_split, runs, epochs, lr, dropout, batch_size=128):
+def train_ri(gen_emb_file, domain_emb_file, load_model_file, data_file, test_xml_file, test_token_seqs_file,
+             output_model_prefix, valid_split, runs, epochs, lr, dropout, batch_size=128):
     #    gen_emb=np.load(data_dir+"gen.vec.npy")
     gen_emb = np.load(gen_emb_file)
     domain_emb = np.load(domain_emb_file)
     print(data_file)
     ae_data = np.load(data_file)
-    test_sent_texts = read_sent_texts(test_xml_file)
+    test_sent_texts, true_test_terms_list = read_se14_xml(test_xml_file)
 
     with open(test_token_seqs_file) as f:
         test_token_seqs = json.load(f)
@@ -162,13 +208,15 @@ def train_ri(gen_emb_file, domain_emb_file, load_model_file, domain, data_file, 
 
     for r in range(runs):
         print('{}, load model from {}'.format(r, load_model_file))
-        # model = Model(gen_emb, domain_emb, 3, dropout=dropout, crf=False)
-        model = torch.load(load_model_file)
+        if load_model_file is not None:
+            model = torch.load(load_model_file)
+        else:
+            model = Model(gen_emb, domain_emb, 3, dropout=dropout, crf=False)
         model.cuda()
         parameters = [p for p in model.parameters() if p.requires_grad]
         optimizer = torch.optim.Adam(parameters, lr=lr)
-        train(train_X, train_y, valid_X, valid_y, ae_data['test_X'], test_sent_texts, test_token_seqs,  model,
-              output_model_prefix + str(r), optimizer, parameters, epochs, crf=False)
+        train(train_X, train_y, valid_X, valid_y, ae_data['test_X'], test_sent_texts, test_token_seqs,
+              true_test_terms_list, model, output_model_prefix + str(r), optimizer, parameters, epochs, crf=False)
 
 
 if __name__ == "__main__":
@@ -196,7 +244,7 @@ if __name__ == "__main__":
 
     domain = 'laptop'
     if args.domain == 'laptop':
-        data_file = 'data/prep_data/laptops14-dhl.npz'
+        data_file = 'data/prep_data/laptop.npz'
     elif args.domain == 're14':
         data_file = 'data/prep_data/restaurants14-dhl.npz'
         domain = 'restaurant'
@@ -207,10 +255,12 @@ if __name__ == "__main__":
     gen_emb_file = 'data/prep_data/glove.840B.300d.txt.npy'
     domain_emb_file = 'data/prep_data/laptop_emb.vec.npy'
     load_model_file = os.path.join(main_data_dir, 'decnndata/laptops-decnn.pth')
+    # load_model_file = None
     output_model_prefix = os.path.join(main_data_dir, 'decnndata/laptops-decnn-ri')
-    text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
+    # text_file = 'data/prep_data/laptops14-dhl-test-raw.json'
+    text_file = 'data/prep_data/laptop_raw_test.json'
     test_gold_file = 'data/official_data/Laptops_Test_Gold.xml'
 
-    train_ri(gen_emb_file, domain_emb_file, load_model_file, domain, data_file, test_gold_file,
-             text_file, output_model_prefix, args.data_dir, args.model_dir, args.valid, args.runs, args.epochs,
+    train_ri(gen_emb_file, domain_emb_file, load_model_file, data_file, test_gold_file,
+             text_file, output_model_prefix, args.valid, args.runs, args.epochs,
              args.lr, args.dropout, args.batch_size)
