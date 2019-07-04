@@ -1,4 +1,5 @@
 import argparse
+import os
 import torch
 import numpy as np
 import random
@@ -8,29 +9,33 @@ from decnn import batch_generator, Model
 np.random.seed(1337)
 random.seed(1337)
 torch.manual_seed(1337)
-torch.cuda.manual_seed(1337)
+# torch.cuda.manual_seed(1337)
 
 
 def get_data(tok_texts_file, tokfc_texts_file, terms_file, token_id_file):
     terms_true_list = datautils.load_json_objs(terms_file)
+
     f_tok = open(tok_texts_file, encoding='utf-8')
     f_tokfc = open(tokfc_texts_file, encoding='utf-8')
     for i, (line_tok, line_tokfc) in enumerate(zip(f_tok, f_tokfc)):
         if i > 10:
             break
-        word_idxs_list = __get_word_idx_sequence(words_list, word_idx_dict)
-        len_max = max([len(words) for words in words_list])
-        print('max sentence len:', len_max)
+        print(line_tok.strip())
+        print(line_tokfc.strip())
 
-        labels_list = list()
-        for sent_idx, (sent, sent_words) in enumerate(zip(sents, words_list)):
-            aspect_objs = sent.get('terms', list())
-            aspect_terms = [t['term'] for t in aspect_objs]
+        # word_idxs_list = __get_word_idx_sequence(words_list, word_idx_dict)
+        # len_max = max([len(words) for words in words_list])
+        # print('max sentence len:', len_max)
+        #
+        # labels_list = list()
+        # for sent_idx, (sent, sent_words) in enumerate(zip(sents, words_list)):
+        #     aspect_objs = sent.get('terms', list())
+        #     aspect_terms = [t['term'] for t in aspect_objs]
+        #
+        #     x = label_sentence(sent_words, aspect_terms)
+        #     labels_list.append(x)
 
-            x = label_sentence(sent_words, aspect_terms)
-            labels_list.append(x)
-
-    return labels_list, word_idxs_list
+    # return labels_list, word_idxs_list
 
 
 def valid_loss(model, valid_X, valid_y, crf=False):
@@ -46,9 +51,10 @@ def valid_loss(model, valid_X, valid_y, crf=False):
     return sum(losses) / len(losses)
 
 
-def __pretrain(tok_texts_file, tokfc_texts_file, terms_file, token_id_file, valid_ids_file,
+def __pretrain(tok_texts_file, tokfc_texts_file, terms_file, token_id_file,
                n_epochs, batch_size, use_crf=False):
     get_data(tok_texts_file, tokfc_texts_file, terms_file, token_id_file)
+    exit()
 
     best_loss = float("inf")
     for epoch in range(n_epochs):
@@ -98,8 +104,12 @@ if __name__ == "__main__":
 
     if platform().startswith('Windows'):
         model_dir = 'd:/data/aspect/decnn-models/'
+        data_dir = 'd:/data/aspect'
+        amazon_dir = 'd:/data/res/amazon/'
     else:
         model_dir = '/home/hldai/data/aspect/decnn-models/'
+        data_dir = '/home/hldai/data/aspect'
+        amazon_dir = '/home/hldai/data/res/amazon/'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_dir', type=str, default=model_dir)
@@ -114,11 +124,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    tok_texts_file = ''
-    tokfc_texts_file = ''
-    terms_file = ''
-    token_id_file = ''
-    valid_ids_file = ''
+    tok_texts_file = os.path.join(amazon_dir, 'laptops-reivews-sent-tok-text.txt')
+    tokfc_texts_file = os.path.join(amazon_dir, 'laptops-reivews-sent-text-tokfc.txt')
+    terms_file = os.path.join(data_dir, 'amazon-laptops-aspect-rm-rule-result.txt')
+    token_id_file = 'data/prep_data/word_idx_dhl.json'
     n_epochs = 35
     batch_size = 32
-    __pretrain(tok_texts_file, tokfc_texts_file, terms_file, token_id_file, valid_ids_file, n_epochs, batch_size)
+    __pretrain(tok_texts_file, tokfc_texts_file, terms_file, token_id_file, n_epochs, batch_size)
